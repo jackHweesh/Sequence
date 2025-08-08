@@ -90,7 +90,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# NOTE: Do not ignore CRA's public/ so public/index.html is tracked
 
 # Storybook build outputs
 .out
