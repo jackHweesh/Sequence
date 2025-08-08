@@ -212,7 +212,7 @@ const SequenceGame = () => {
         <div className="flex-1 flex items-center justify-center -mt-16">
           <div className="text-center">
             <img 
-              src="/SequenceLogoFinal.png" 
+              src={process.env.PUBLIC_URL + '/SequenceLogoFinal.png'} 
               alt="Sequence Logo" 
               className="w-72 h-72 mx-auto mb-2"
             />
