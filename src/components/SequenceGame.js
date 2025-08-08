@@ -18,6 +18,7 @@ import {
 import DraggableItem from './DraggableItem';
 import ShareResults from './ShareResults';
 import { EVENTS, CORRECT_ORDER, shuffleArray, checkGuess, getFeedback, getTodaysQuestion, getDayNumber, getTodaysDate } from '../utils/gameData';
+import sequenceLogo from '../assets/SequenceLogoFinal.png';
 
 const SequenceGame = () => {
   const [items, setItems] = useState([]);
@@ -98,43 +99,24 @@ const SequenceGame = () => {
         // If saved state is corrupted, continue with normal flow
       }
     }
-    // Only show welcome screen if no saved state exists
-    if (questionData) {
-      setGameState('welcome');
-    }
-  }, [questionData, todayKey]);
+  }, []);
 
-  // Persist state after any change
+  // Save state whenever relevant values change
   useEffect(() => {
-    if (gameState !== 'loading' && gameState !== 'welcome') {
-      localStorage.setItem(
-        todayKey,
-        JSON.stringify({ 
-          items, 
-          triesLeft, 
-          feedback, 
-          revealedIndices, 
-          gameState, 
-          isCorrect,
-          gameHistory 
-        })
-      );
-    }
-  }, [items, triesLeft, feedback, revealedIndices, gameState, isCorrect, gameHistory, todayKey]);
+    const state = {
+      items,
+      triesLeft,
+      feedback,
+      revealedIndices,
+      gameState,
+      isCorrect,
+      gameHistory,
+    };
+    localStorage.setItem(todayKey, JSON.stringify(state));
+  }, [items, triesLeft, feedback, revealedIndices, gameState, isCorrect, gameHistory]);
 
   const startGame = () => {
-    if (questionData) {
-      setItems(shuffleArray([...questionData.events]));
-    } else {
-      setItems(shuffleArray([...EVENTS]));
-    }
-    setTriesLeft(3);
     setGameState('playing');
-    setFeedback([]);
-    setRevealedIndices([]);
-    setIsCorrect(false);
-    setGameHistory([]);
-    setShowShareResults(false);
   };
 
   const resetGame = () => {
@@ -155,14 +137,13 @@ const SequenceGame = () => {
   const handleDragEnd = (event) => {
     const { active, over } = event;
 
-    if (active.id !== over.id) {
-      setItems((items) => {
-        const oldIndex = items.indexOf(active.id);
-        const newIndex = items.indexOf(over.id);
+    if (!over || active.id === over.id) return;
 
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
+    setItems((items) => {
+      const oldIndex = items.indexOf(active.id);
+      const newIndex = items.indexOf(over.id);
+      return arrayMove(items, oldIndex, newIndex);
+    });
   };
 
   const handleSubmit = () => {
@@ -170,10 +151,7 @@ const SequenceGame = () => {
 
     const currentFeedback = getFeedback(items, correctOrder);
     const correct = checkGuess(items, correctOrder);
-    
-    // Add current guess to game history
-    setGameHistory(prev => [...prev, currentFeedback]);
-    
+
     setFeedback(currentFeedback);
     setIsCorrect(correct);
     setGameState('revealing');
@@ -189,7 +167,6 @@ const SequenceGame = () => {
     setTimeout(() => {
       if (correct || triesLeft <= 1) {
         setGameState('finished');
-        setShowShareResults(true);
       } else {
         setTriesLeft(prev => prev - 1);
         setGameState('playing');
@@ -212,7 +189,7 @@ const SequenceGame = () => {
         <div className="flex-1 flex items-center justify-center -mt-16">
           <div className="text-center">
             <img 
-              src={process.env.PUBLIC_URL + '/SequenceLogoFinal.png'} 
+              src={sequenceLogo}
               alt="Sequence Logo" 
               className="w-72 h-72 mx-auto mb-2"
             />
@@ -351,8 +328,6 @@ const SequenceGame = () => {
           onClose={() => setShowShareResults(false)}
         />
       )}
-
-      <div className="mt-8 text-center text-white/70 text-xs">© 2025 BlueOak Enterprises. All rights reserved.</div>
     </div>
   );
 };
