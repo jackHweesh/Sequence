@@ -57,6 +57,8 @@ const HowToPlay = ({ onBack }) => {
             </div>
           </div>
         </div>
+
+        <div className="mt-8 text-center text-white/70 text-xs">© 2025 BlueOak Enterprises. All rights reserved.</div>
       </div>
     </div>
   );

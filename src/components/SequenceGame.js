@@ -212,7 +212,7 @@ const SequenceGame = () => {
         <div className="flex-1 flex items-center justify-center -mt-16">
           <div className="text-center">
             <img 
-              src="/SequenceS.png" 
+              src="/SequenceLogoFinal.png" 
               alt="Sequence Logo" 
               className="w-72 h-72 mx-auto mb-2"
             />
@@ -226,6 +226,7 @@ const SequenceGame = () => {
             </button>
           </div>
         </div>
+        <div className="mt-8 text-center text-white/70 text-xs">© 2025 BlueOak Enterprises. All rights reserved.</div>
       </div>
     );
   }
@@ -243,6 +244,7 @@ const SequenceGame = () => {
             </div>
           </div>
         </div>
+        <div className="mt-8 text-center text-white/70 text-xs">© 2025 BlueOak Enterprises. All rights reserved.</div>
       </div>
     );
   }
@@ -349,6 +351,8 @@ const SequenceGame = () => {
           onClose={() => setShowShareResults(false)}
         />
       )}
+
+      <div className="mt-8 text-center text-white/70 text-xs">© 2025 BlueOak Enterprises. All rights reserved.</div>
     </div>
   );
 };
