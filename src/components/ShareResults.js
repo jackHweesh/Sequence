@@ -21,6 +21,9 @@ const ShareResults = ({ gameHistory, isCorrect, onClose }) => {
       shareText += `${rowText}\n`;
     }
     
+    // Append promotional/site URL at the bottom
+    shareText += `\nwww.thedailysequence.com`;
+
     return shareText;
   };
 
@@ -81,6 +84,11 @@ const ShareResults = ({ gameHistory, isCorrect, onClose }) => {
                 ))}
               </div>
             ))}
+          </div>
+
+          {/* Site URL under emoji grid */}
+          <div className="text-center text-gray-600 text-sm">
+            www.thedailysequence.com
           </div>
         </div>
 

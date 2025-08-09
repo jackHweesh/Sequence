@@ -16,6 +16,7 @@
     "dev": "set BROWSER=none && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "import:questions": "node scripts/import-questions.mjs scripts/questions_input.json --start=today",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
