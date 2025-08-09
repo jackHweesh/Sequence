@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import DraggableItem from './DraggableItem';
 import ShareResults from './ShareResults';
-import { EVENTS, CORRECT_ORDER, shuffleArray, checkGuess, getFeedback, getTodaysQuestion, getDayNumber, getTodaysDate } from '../utils/gameData';
+import { EVENTS, CORRECT_ORDER, shuffleArray, checkGuess, getFeedback, getTodaysQuestion, getTodaysDate } from '../utils/gameData';
 import sequenceLogo from '../assets/SequenceLogoFinal.png';
 
 const SequenceGame = () => {
@@ -31,7 +31,6 @@ const SequenceGame = () => {
   const [showShareResults, setShowShareResults] = useState(false);
   const [questionData, setQuestionData] = useState(null);
   const [correctOrder, setCorrectOrder] = useState([]);
-  const [currentDay, setCurrentDay] = useState(0);
 
   // Compute today's key for localStorage
   const todayKey = `sequence-${new Date().toISOString().slice(0, 10)}`;
@@ -58,8 +57,6 @@ const SequenceGame = () => {
   useEffect(() => {
     const loadTodaysQuestion = async () => {
       try {
-        const dayNumber = getDayNumber();
-        setCurrentDay(dayNumber);
         const data = await getTodaysQuestion();
         setQuestionData(data);
         setCorrectOrder(data.correct_order);
