@@ -243,7 +243,7 @@ const SequenceGame = ({ onWelcomeChange }) => {
         (
           <button
             onClick={() => setShowShareResults(true)}
-            className="fixed top-4 right-16 z-50 bg-transparent text-white hover:text-white/90 p-2 transition-colors duration-200"
+            className="absolute top-4 right-16 z-50 bg-transparent text-white hover:text-white/90 p-2 transition-colors duration-200"
             style={{ zIndex: 9999 }}
             title="Share Results"
           >

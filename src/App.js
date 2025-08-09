@@ -32,9 +32,9 @@ function App() {
 
   return (
     <div className="App">
-      {/* Settings Dropdown - hide on the game's welcome screen */}
+      {/* Settings Dropdown - hide on the game's welcome screen; use absolute so it stays only at the top */}
       {(currentPage !== 'game' || !isWelcome) && (
-        <div className="fixed top-4 right-4 z-50">
+        <div className="absolute top-4 right-4 z-50">
           <SettingsDropdown onNavigate={handleNavigate} />
         </div>
       )}
