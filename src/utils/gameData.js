@@ -51,11 +51,15 @@ export const getTodaysQuestion = async () => {
       .from('questions')
       .select('*')
       .eq('day_number', dayNumber)
-      .single();
-    
-    if (error) {
-      console.error('Error fetching question:', error);
-      // Return fallback data if Supabase fails
+      .maybeSingle(); // avoid 406 when zero rows
+
+    if (error || !data) {
+      // Graceful fallback if no row for today or any error
+      if (error) {
+        console.warn('Could not fetch question from Supabase (falling back to static data):', error.message || error);
+      } else {
+        console.warn('No question found for today; falling back to static data');
+      }
       return {
         question_text: 'Put these events in chronological order',
         events: EVENTS,
@@ -65,7 +69,7 @@ export const getTodaysQuestion = async () => {
     
     return data;
   } catch (error) {
-    console.error('Error fetching question:', error);
+    console.warn('Error fetching question (falling back to static data):', error);
     // Return fallback data if there's any error
     return {
       question_text: 'Put these events in chronological order',
