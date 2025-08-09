@@ -1,7 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const SettingsDropdown = ({ onNavigate }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!isOpen) return;
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
 
   const handleNavigate = (page) => {
     setIsOpen(false);
@@ -9,11 +21,11 @@ const SettingsDropdown = ({ onNavigate }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       {/* Simple Gear Icon Button - clean gray design */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-white/20 hover:bg-white/30 text-gray-300 hover:text-white p-2 rounded-lg transition-colors duration-200"
+        className="bg-transparent text-white hover:text-white/90 p-2 transition-colors duration-200"
         title="Settings"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

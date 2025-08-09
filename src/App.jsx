@@ -6,6 +6,7 @@ import SettingsDropdown from './components/SettingsDropdown';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('game');
+  const [isWelcome, setIsWelcome] = useState(true);
 
   const handleNavigate = (page) => {
     setCurrentPage(page);
@@ -22,16 +23,18 @@ function App() {
       case 'terms':
         return <TermsOfService onBack={handleBack} />;
       default:
-        return <SequenceGame />;
+        return <SequenceGame onWelcomeChange={setIsWelcome} />;
     }
   };
 
   return (
     <div className="App">
-      {/* Settings Dropdown - show on all pages */}
-      <div className="fixed top-4 right-4 z-50" style={{zIndex: 9999}}>
-        <SettingsDropdown onNavigate={handleNavigate} />
-      </div>
+      {/* Settings Dropdown - hide on the game's welcome screen */}
+      {(currentPage !== 'game' || !isWelcome) && (
+        <div className="fixed top-4 right-4 z-50" style={{ zIndex: 9999 }}>
+          <SettingsDropdown onNavigate={handleNavigate} />
+        </div>
+      )}
       
       {renderPage()}
     </div>

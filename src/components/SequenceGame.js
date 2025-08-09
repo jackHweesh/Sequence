@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   DndContext,
   closestCenter,
@@ -20,7 +21,7 @@ import ShareResults from './ShareResults';
 import { EVENTS, CORRECT_ORDER, shuffleArray, checkGuess, getFeedback, getTodaysQuestion, getTodaysDate } from '../utils/gameData';
 import sequenceLogo from '../assets/SequenceLogoFinal.png';
 
-const SequenceGame = () => {
+const SequenceGame = ({ onWelcomeChange }) => {
   const [items, setItems] = useState([]);
   const [triesLeft, setTriesLeft] = useState(3);
   const [gameState, setGameState] = useState('welcome'); // 'welcome', 'loading', 'playing', 'revealing', 'finished'
@@ -76,6 +77,13 @@ const SequenceGame = () => {
 
     loadTodaysQuestion();
   }, []);
+
+  // Notify parent about whether we're on the welcome screen
+  useEffect(() => {
+    if (typeof onWelcomeChange === 'function') {
+      onWelcomeChange(gameState === 'welcome');
+    }
+  }, [gameState, onWelcomeChange]);
 
   // Load saved state on mount
   useEffect(() => {
@@ -230,6 +238,23 @@ const SequenceGame = () => {
 
   return (
     <div className="min-h-screen p-4 flex flex-col bg-gradient-to-br from-purple-600 to-blue-600">
+      {/* Share Button - fixed at top-right like the gear button (render outside header) */}
+      {gameState === 'finished' && createPortal(
+        (
+          <button
+            onClick={() => setShowShareResults(true)}
+            className="fixed top-4 right-16 z-50 bg-transparent text-white hover:text-white/90 p-2 transition-colors duration-200"
+            style={{ zIndex: 9999 }}
+            title="Share Results"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+            </svg>
+          </button>
+        ),
+        document.body
+      )}
+
       {/* Header */}
       <div className="relative text-center mb-6">
         <h1 className="text-3xl font-bold text-white mb-2">Sequence</h1>
@@ -239,19 +264,6 @@ const SequenceGame = () => {
             <p className="text-base font-medium">Tries left: {triesLeft}</p>
             <p className="text-xs opacity-75">{getTodaysDate()}</p>
           </div>
-        )}
-        
-        {/* Share Button */}
-        {gameState === 'finished' && (
-          <button
-            onClick={() => setShowShareResults(true)}
-            className="absolute top-0 right-12 bg-white/20 hover:bg-white/30 text-white p-2 rounded-lg transition-colors duration-200"
-            title="Share Results"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-            </svg>
-          </button>
         )}
       </div>
 

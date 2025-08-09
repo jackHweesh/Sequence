@@ -18,7 +18,7 @@ import {
 import DraggableItem from './DraggableItem';
 import { EVENTS, CORRECT_ORDER, shuffleArray, checkGuess, getFeedback } from '../utils/gameData';
 
-const SequenceGame = () => {
+const SequenceGame = ({ onWelcomeChange }) => {
   const [items, setItems] = useState([]);
   const [triesLeft, setTriesLeft] = useState(3);
   const [gameState, setGameState] = useState('playing'); // 'playing', 'revealing', 'finished'
@@ -48,6 +48,13 @@ const SequenceGame = () => {
   useEffect(() => {
     resetGame();
   }, []);
+
+  // Notify parent about welcome state if provided
+  useEffect(() => {
+    if (typeof onWelcomeChange === 'function') {
+      onWelcomeChange(gameState === 'welcome');
+    }
+  }, [gameState, onWelcomeChange]);
 
   const resetGame = () => {
     setItems(shuffleArray([...EVENTS]));
