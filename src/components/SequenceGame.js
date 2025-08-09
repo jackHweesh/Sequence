@@ -149,6 +149,9 @@ const SequenceGame = () => {
     const currentFeedback = getFeedback(items, correctOrder);
     const correct = checkGuess(items, correctOrder);
 
+    // Record this attempt's feedback in game history so it can be shared later
+    setGameHistory((previousHistory) => [...previousHistory, currentFeedback]);
+
     setFeedback(currentFeedback);
     setIsCorrect(correct);
     setGameState('revealing');
@@ -164,6 +167,8 @@ const SequenceGame = () => {
     setTimeout(() => {
       if (correct || triesLeft <= 1) {
         setGameState('finished');
+        // Automatically open the share modal upon puzzle completion
+        setShowShareResults(true);
       } else {
         setTriesLeft(prev => prev - 1);
         setGameState('playing');
@@ -325,6 +330,9 @@ const SequenceGame = () => {
           onClose={() => setShowShareResults(false)}
         />
       )}
+
+      {/* Footer */}
+      <div className="mt-8 text-center text-white/70 text-xs">© 2025 BlueOak Enterprises. All rights reserved.</div>
     </div>
   );
 };
