@@ -160,15 +160,7 @@ const SequenceGame = ({ onWelcomeChange }) => {
           </button>
         )}
 
-        {/* Try Again Button */}
-        {gameState === 'finished' && (
-          <button
-            onClick={resetGame}
-            className="w-full mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-200"
-          >
-            Play Again
-          </button>
-        )}
+        {/* Play Again button removed per request */}
       </div>
 
       {/* Correct Order Display */}
