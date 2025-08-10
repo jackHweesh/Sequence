@@ -7,7 +7,7 @@ const ShareResults = ({ gameHistory, isCorrect, dayNumber, onClose }) => {
     const maxGuesses = 3;
     const totalGuesses = gameHistory.length;
     
-    let shareText = `Sequence ${dayNumber ? dayNumber : ''} ${isCorrect ? '✅ ' + totalGuesses : '❌'}/${maxGuesses}\n\n`;
+    let shareText = `Sequence #${dayNumber ? dayNumber : ''} ${isCorrect ? '✅ ' + totalGuesses : '❌'}/${maxGuesses}\n\n`;
     
     // Add each guess as a column (vertical format)
     const numItems = gameHistory[0]?.length || 5;
@@ -65,7 +65,7 @@ const ShareResults = ({ gameHistory, isCorrect, dayNumber, onClose }) => {
           {/* Sequence Status */}
           <div className="text-center mb-2">
             <span className="text-sm text-gray-500">
-              Sequence {dayNumber ? dayNumber : ''} {isCorrect ? '✅ ' + gameHistory.length : '❌'}/3
+              Sequence #{dayNumber ? dayNumber : ''} {isCorrect ? '✅ ' + gameHistory.length : '❌'}/3
             </span>
           </div>
           
