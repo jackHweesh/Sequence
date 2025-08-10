@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 
-const ShareResults = ({ gameHistory, isCorrect, onClose }) => {
+const ShareResults = ({ gameHistory, isCorrect, dayNumber, onClose }) => {
   const [copied, setCopied] = useState(false);
 
   const generateShareText = () => {
     const maxGuesses = 3;
     const totalGuesses = gameHistory.length;
     
-    let shareText = `Sequence ${isCorrect ? '✅ ' + totalGuesses : '❌'}/${maxGuesses}\n\n`;
+    let shareText = `Sequence ${dayNumber ? dayNumber : ''} ${isCorrect ? '✅ ' + totalGuesses : '❌'}/${maxGuesses}\n\n`;
     
     // Add each guess as a column (vertical format)
     const numItems = gameHistory[0]?.length || 5;
@@ -62,11 +62,12 @@ const ShareResults = ({ gameHistory, isCorrect, onClose }) => {
 
         {/* Results Display */}
         <div className="mb-6">
-                     <div className="text-center mb-2">
-             <span className="text-sm text-gray-500">
-               Sequence {isCorrect ? '✅ ' + gameHistory.length : '❌'}/3
-             </span>
-           </div>
+          {/* Sequence Status */}
+          <div className="text-center mb-2">
+            <span className="text-sm text-gray-500">
+              Sequence {dayNumber ? dayNumber : ''} {isCorrect ? '✅ ' + gameHistory.length : '❌'}/3
+            </span>
+          </div>
           
           {/* Emoji Grid */}
           <div className="flex justify-center space-x-2 mb-4">

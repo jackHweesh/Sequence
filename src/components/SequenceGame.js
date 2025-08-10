@@ -32,6 +32,7 @@ const SequenceGame = ({ onWelcomeChange }) => {
   const [showShareResults, setShowShareResults] = useState(false);
   const [questionData, setQuestionData] = useState(null);
   const [correctOrder, setCorrectOrder] = useState([]);
+  const [dayNumber, setDayNumber] = useState(null);
 
   // Compute today's key for localStorage
   const todayKey = `sequence-${new Date().toISOString().slice(0, 10)}`;
@@ -62,6 +63,9 @@ const SequenceGame = ({ onWelcomeChange }) => {
         setQuestionData(data);
         setCorrectOrder(data.correct_order);
         setItems(shuffleArray([...data.events]));
+        if (data.day_number) {
+          setDayNumber(data.day_number);
+        }
       } catch (error) {
         console.error('Error loading question:', error);
         // Fallback to static data
@@ -331,6 +335,7 @@ const SequenceGame = ({ onWelcomeChange }) => {
         <ShareResults
           gameHistory={gameHistory}
           isCorrect={isCorrect}
+          dayNumber={dayNumber}
           onClose={() => setShowShareResults(false)}
         />
       )}

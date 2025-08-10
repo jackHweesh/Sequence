@@ -16,7 +16,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import DraggableItem from './DraggableItem';
-import { EVENTS, CORRECT_ORDER, shuffleArray, checkGuess, getFeedback } from '../utils/gameData';
+import { EVENTS, CORRECT_ORDER, shuffleArray, checkGuess, getFeedback, getTodaysQuestion } from '../utils/gameData';
 
 const SequenceGame = ({ onWelcomeChange }) => {
   const [items, setItems] = useState([]);
@@ -25,6 +25,7 @@ const SequenceGame = ({ onWelcomeChange }) => {
   const [feedback, setFeedback] = useState([]);
   const [revealedIndices, setRevealedIndices] = useState([]);
   const [isCorrect, setIsCorrect] = useState(false);
+  const [dayNumber, setDayNumber] = useState(null);
 
   // Configure sensors for better mobile and keyboard support
   const sensors = useSensors(
@@ -46,8 +47,21 @@ const SequenceGame = ({ onWelcomeChange }) => {
 
   // Initialize game
   useEffect(() => {
-    resetGame();
+    initializeGame();
   }, []);
+
+  const initializeGame = async () => {
+    try {
+      const questionData = await getTodaysQuestion();
+      if (questionData.day_number) {
+        setDayNumber(questionData.day_number);
+      }
+      resetGame();
+    } catch (error) {
+      console.error('Error initializing game:', error);
+      resetGame();
+    }
+  };
 
   // Notify parent about welcome state if provided
   useEffect(() => {
