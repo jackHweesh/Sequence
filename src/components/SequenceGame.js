@@ -8,7 +8,6 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -33,9 +32,7 @@ const SequenceGame = ({ onWelcomeChange }) => {
   const [questionData, setQuestionData] = useState(null);
   const [correctOrder, setCorrectOrder] = useState([]);
   const [dayNumber, setDayNumber] = useState(null);
-
-  // Compute today's key for localStorage
-  const todayKey = `sequence-${new Date().toISOString().slice(0, 10)}`;
+  const [storageKey, setStorageKey] = useState(null);
 
   // Configure sensors for better mobile and keyboard support
   const sensors = useSensors(
@@ -55,19 +52,70 @@ const SequenceGame = ({ onWelcomeChange }) => {
     })
   );
 
-  // Load today's question from Supabase
+  // Single initialization flow: fetch today's puzzle, compute per-day storage key,
+  // then restore saved state BEFORE initializing a new session
   useEffect(() => {
-    const loadTodaysQuestion = async () => {
+    const initialize = async () => {
       try {
+        // Start in loading state until we resolve restore/init
+        setGameState('loading');
+
         const data = await getTodaysQuestion();
         setQuestionData(data);
         setCorrectOrder(data.correct_order);
-        setItems(shuffleArray([...data.events]));
         if (data.day_number) {
           setDayNumber(data.day_number);
         }
+
+        // Prefer server-provided show_date; fallback to UTC date
+        const puzzleId = data.show_date || new Date().toISOString().slice(0, 10);
+        const key = `sequence:v1:${puzzleId}`;
+        setStorageKey(key);
+
+        // Attempt restore first
+        const savedRaw = localStorage.getItem(key);
+        if (savedRaw) {
+          try {
+            const savedState = JSON.parse(savedRaw);
+            // If already finished, restore finished view and block more tries
+            if (savedState.isCorrect || savedState.gameState === 'finished' || savedState.triesLeft === 0) {
+              setItems(savedState.items ?? data.events);
+              setTriesLeft(0);
+              setFeedback(savedState.feedback ?? []);
+              setRevealedIndices(savedState.revealedIndices ?? []);
+              setGameState('finished');
+              setIsCorrect(!!savedState.isCorrect);
+              setGameHistory(savedState.gameHistory || []);
+              return;
+            }
+            // If in-progress with attempts left, restore progress
+            if (savedState.gameState === 'playing' && savedState.triesLeft > 0) {
+              setItems(savedState.items ?? data.events);
+              setTriesLeft(savedState.triesLeft);
+              setFeedback(savedState.feedback ?? []);
+              setRevealedIndices(savedState.revealedIndices ?? []);
+              setGameState('playing');
+              setIsCorrect(!!savedState.isCorrect);
+              setGameHistory(savedState.gameHistory || []);
+              return;
+            }
+            // Otherwise fall through to fresh init
+          } catch (e) {
+            console.warn('Saved state parse error; starting fresh');
+          }
+        }
+
+        // Fresh init for today (no restore)
+        setItems(shuffleArray([...data.events]));
+        setTriesLeft(3);
+        setFeedback([]);
+        setRevealedIndices([]);
+        setIsCorrect(false);
+        setGameHistory([]);
+        setShowShareResults(false);
+        setGameState('welcome');
       } catch (error) {
-        console.error('Error loading question:', error);
+        console.error('Error initializing puzzle:', error);
         // Fallback to static data
         setQuestionData({
           question_text: 'Put these events in chronological order',
@@ -76,10 +124,17 @@ const SequenceGame = ({ onWelcomeChange }) => {
         });
         setCorrectOrder(CORRECT_ORDER);
         setItems(shuffleArray([...EVENTS]));
+        setTriesLeft(3);
+        setFeedback([]);
+        setRevealedIndices([]);
+        setIsCorrect(false);
+        setGameHistory([]);
+        setShowShareResults(false);
+        setGameState('welcome');
       }
     };
 
-    loadTodaysQuestion();
+    initialize();
   }, []);
 
   // Notify parent about whether we're on the welcome screen
@@ -89,29 +144,32 @@ const SequenceGame = ({ onWelcomeChange }) => {
     }
   }, [gameState, onWelcomeChange]);
 
-  // Load saved state on mount
+  // Prevent accidental refresh/close while in-progress
   useEffect(() => {
-    const saved = localStorage.getItem(todayKey);
-    if (saved) {
-      try {
-        const state = JSON.parse(saved);
-        setItems(state.items);
-        setTriesLeft(state.triesLeft);
-        setFeedback(state.feedback);
-        setRevealedIndices(state.revealedIndices);
-        setGameState(state.gameState);
-        setIsCorrect(state.isCorrect);
-        setGameHistory(state.gameHistory || []);
-        return;
-      } catch (error) {
-        console.error('Error loading saved state:', error);
-        // If saved state is corrupted, continue with normal flow
+    const beforeUnload = (e) => {
+      if (gameState === 'playing' && triesLeft > 0 && !isCorrect) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
       }
-    }
-  }, []);
+    };
+    const keydown = (e) => {
+      const isRefreshKey = e.key === 'F5' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'r');
+      if (isRefreshKey && gameState === 'playing' && triesLeft > 0 && !isCorrect) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('beforeunload', beforeUnload);
+    window.addEventListener('keydown', keydown, { capture: true });
+    return () => {
+      window.removeEventListener('beforeunload', beforeUnload);
+      window.removeEventListener('keydown', keydown, { capture: true });
+    };
+  }, [gameState, triesLeft, isCorrect]);
 
   // Save state whenever relevant values change
   useEffect(() => {
+    if (!storageKey) return;
     const state = {
       items,
       triesLeft,
@@ -121,14 +179,40 @@ const SequenceGame = ({ onWelcomeChange }) => {
       isCorrect,
       gameHistory,
     };
-    localStorage.setItem(todayKey, JSON.stringify(state));
-  }, [items, triesLeft, feedback, revealedIndices, gameState, isCorrect, gameHistory]);
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  }, [storageKey, items, triesLeft, feedback, revealedIndices, gameState, isCorrect, gameHistory]);
 
   const startGame = () => {
+    // Check if user has already completed today's puzzle
+    if (storageKey) {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        try {
+          const state = JSON.parse(saved);
+          if (state.isCorrect || state.gameState === 'finished' || state.triesLeft === 0) {
+            setItems(state.items ?? items);
+            setTriesLeft(0);
+            setFeedback(state.feedback ?? []);
+            setRevealedIndices(state.revealedIndices ?? []);
+            setGameState('finished');
+            setIsCorrect(!!state.isCorrect);
+            setGameHistory(state.gameHistory || []);
+            return;
+          }
+        } catch (error) {
+          console.error('Error checking saved state:', error);
+        }
+      }
+    }
     setGameState('playing');
   };
 
   const resetGame = () => {
+    // Don't allow reset if game is already completed for today
+    if (isCorrect || gameState === 'finished') {
+      return;
+    }
+    
     if (questionData) {
       setItems(shuffleArray([...questionData.events]));
     } else {
@@ -156,7 +240,7 @@ const SequenceGame = ({ onWelcomeChange }) => {
   };
 
   const handleSubmit = () => {
-    if (gameState !== 'playing') return;
+    if (gameState !== 'playing' || triesLeft <= 0) return;
 
     const currentFeedback = getFeedback(items, correctOrder);
     const correct = checkGuess(items, correctOrder);
